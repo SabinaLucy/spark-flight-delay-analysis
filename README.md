@@ -1,52 +1,78 @@
+
 # Spark Flight Delay Analysis
 
 ## Project Overview
 
-This project uses **Apache Spark with PySpark** to process and analyze the 2015 U.S. flight delays and cancellations dataset. The project examines flight delays using Spark and evaluates how performance changes with different numbers of Spark executors.
+This project uses **Apache Spark and PySpark** to process and analyze the **2015 U.S. Flight Delays and Cancellations** dataset.
 
-The project is implemented in **Google Colab** using a Spark standalone cluster.
+We used two different methods to explore flight delays and compare how execution performance changes with different Spark executor configurations.
+
+- **Sabina Bimbi:** Flight delay classification using Spark MLlib Logistic Regression
+- **Samantha Griffith:** Descriptive statistics and correlation analysis using Spark DataFrames
+
+The project was developed in **Google Colab** using a Spark standalone cluster.
 
 ## Dataset
 
-The project uses the **2015 Flight Delays and Cancellations** dataset from the U.S. Department of Transportation.
+**Source:** [2015 Flight Delays and Cancellations on Kaggle](https://www.kaggle.com/datasets/usdot/flight-delays)
 
-The dataset contains more than **5 million flight records** and includes information about:
+The dataset contains **5,819,079 flight records** and information about airlines, airports, departure times, arrival times, delays, cancellations, and flight distances.
 
-- Flight delays and cancellations
-- Airlines
-- Airports
-- Departure and arrival times
-- Flight distance
-- Cancellation reasons
+The dataset files include:
 
-### Dataset Source
+- `flights.csv`
+- `airlines.csv`
+- `airports.csv`
+- `cancellation_codes.csv`
 
-[Kaggle – 2015 Flight Delays and Cancellations](https://www.kaggle.com/datasets/usdot/flight-delays)
-
-The dataset contains four CSV files:
-
-- `flights.csv` – main flight records
-- `airlines.csv` – airline information
-- `airports.csv` – airport information
-- `cancellation_codes.csv` – cancellation reason codes
-
-The large `flights.csv` file is not stored directly in this repository because of its file size. It can be downloaded from the Kaggle source above.
+The raw dataset is not included in this repository because of its size. It can be downloaded from Kaggle.
 
 ## Project Methods
 
-The same dataset will be used by both team members, with each member applying a different method.
+### 1. Flight Delay Classification
 
-### Logistic Regression Classification
+**Contributor: Sabina Bimbi**
 
-**Team Member: Sabina Bimbi**
+I used **Spark MLlib Logistic Regression** to classify whether a flight would arrive at least 15 minutes late.
 
-Spark MLlib Logistic Regression will be used to classify flights based on whether they experience a significant delay.
+The workflow included data cleaning, feature preparation, model training, and evaluation.
 
-### Correlation and Statistical Analysis
+After preprocessing, the classification dataset contained **5,231,130 records**.
 
-**Team Member: Samantha Griffith**
+The model was evaluated using accuracy, precision, recall, F1 score, ROC AUC, and a confusion matrix.
 
-Spark DataFrames will be used to perform correlation and statistical analysis of relationships among flight delays and other numerical flight characteristics.
+I also tested different classification thresholds to improve detection of delayed flights.
+
+#### Model Results
+
+| Metric | Threshold 0.50 | Threshold 0.20 |
+|---|---:|---:|
+| Accuracy | 0.8082 | 0.6216 |
+| Precision | 0.4428 | 0.2693 |
+| Recall | 0.0006 | 0.5682 |
+| F1 score | 0.0012 | 0.3654 |
+| ROC AUC | 0.6384 | 0.6384 |
+
+The lower threshold increased recall, allowing the model to identify more delayed flights, although it also increased false positive predictions.
+
+### 2. Statistical and Correlation Analysis
+
+**Contributor: Samantha Griffith**
+
+Samantha used Spark DataFrames to calculate descriptive statistics and examine relationships among arrival delays, departure delays, and flight distance.
+
+#### Statistical Results
+
+| Statistic | Value |
+|---|---:|
+| Mean arrival delay | 4.89 minutes |
+| Standard deviation of arrival delay | 39.78 minutes |
+| Mean departure delay | 9.70 minutes |
+| Standard deviation of departure delay | 37.39 minutes |
+| Mean flight distance | 825.23 miles |
+| Standard deviation of flight distance | 608.79 miles |
+
+Correlation calculations are included in the statistical analysis notebook.
 
 ## Technologies and Tools
 
@@ -54,51 +80,95 @@ Spark DataFrames will be used to perform correlation and statistical analysis of
 - Apache Spark
 - PySpark
 - Spark MLlib
+- Google Colab
 - Pandas
 - NumPy
 - Matplotlib
 - Seaborn
-- Google Colab
 
 ## Performance Experiment
 
-Each method will be tested using:
+Both methods were benchmarked using configurations requesting **1, 2, and 4 Spark executors**, with one core per executor.
 
-- **1 Spark executor**
-- **2 Spark executors**
-- **4 Spark executors**
+Each configuration was tested **three times**.
 
-Each configuration will be repeated at least **three times**. Runtime results will be used to calculate the mean, standard deviation, and speedup relative to the 1-executor configuration.
+The recorded wall clock times were used to calculate:
 
-The project will also examine how available CPU cores, Spark partitions, scheduling overhead, shuffle/data movement, and dataset size affect scalability.
+- Mean execution time
+- Standard deviation
+- Speedup relative to one executor
+
+### Performance Comparison
+
+| Executors | Sabina: Mean ± SD (s) | Samantha: Mean ± SD (s) |
+|---|---:|---:|
+| 1 | 822.62 ± 6.35 | 236.62 ± 9.11 |
+| 2 | 787.90 ± 13.10 | 221.39 ± 2.36 |
+| 4 | 907.60 ± 9.84 | 220.69 ± 5.75 |
+
+### Speedup
+
+| Executors | Sabina | Samantha |
+|---|---:|---:|
+| 1 | 1.000 | 1.000 |
+| 2 | 1.044 | 1.069 |
+| 4 | 0.906 | 1.072 |
+
+Sabina's Logistic Regression workflow performed best with **2 executors**.
+
+Samantha's statistical analysis recorded its lowest average execution time with **4 executors**, although the difference between 2 and 4 executors was small.
+
+Both methods showed limited scaling. The experiments were performed in a Google Colab environment with **2 logical CPUs and approximately 12.67 GB of RAM**.
+
+The results demonstrate how available hardware, task scheduling, data movement, and workload complexity can affect Spark performance.
 
 ## Repository Structure
 
+The project contains separate notebooks for both team members and benchmark files for performance evaluation.
+
 ```text
 spark-flight-delay-analysis/
-│
-├── data/
-│   ├── airlines.csv
-│   ├── airports.csv
-│   └── cancellation_codes.csv
-│
-├── notebooks/
-│   └── flight_delay_analysis.ipynb
-│
-├── src/
-│   ├── logistic_regression.py
-│   └── correlation_analysis.py
-│
-├── results/
-│
-├── figures/
-│
 ├── README.md
-└── requirements.txt
+├── notebooks/
+│   ├── Sabina_Flight_Delay_Logistic_Regression.ipynb
+│   └── samantha_flight_delay_statistical_analysis.ipynb
+└── benchmark/
+    ├── flight_delay_benchmark.py
+    └── results/
+        ├── benchmark_1_executors_run_1.json
+        ├── benchmark_1_executors_run_2.json
+        ├── benchmark_1_executors_run_3.json
+        ├── benchmark_2_executors_run_1.json
+        ├── benchmark_2_executors_run_2.json
+        ├── benchmark_2_executors_run_3.json
+        ├── benchmark_4_executors_run_1.json
+        ├── benchmark_4_executors_run_2.json
+        └── benchmark_4_executors_run_3.json
 ```
+
+The structure above is the intended submission layout. File names should match the actual files committed to GitHub.
+
+## Project Findings
+
+The project highlighted two important findings.
+
+First, **model accuracy alone is not enough** when the dataset contains an uneven distribution of classes. Adjusting the classification threshold significantly improved recall for delayed flights.
+
+Second, **adding more Spark executors does not always reduce execution time**. The available hardware and the type of processing performed have a major effect on performance.
 
 ## Project Status
 
-**In Progress**
+**Implementation and benchmarking completed.**
 
-Final results, performance comparisons, visualizations, and analysis will be added as the project progresses.
+Final notebooks, benchmark results, and individual reports are prepared for submission.
+
+## Contributors
+
+**Sabina Bimbi**  
+Spark MLlib Logistic Regression, model evaluation, and performance benchmarking.
+
+**Samantha Griffith**  
+Spark statistical analysis, correlation analysis, and performance benchmarking.
+
+**Course:** SAT5165 Big Data Analytics  
+**Institution:** Michigan Technological University

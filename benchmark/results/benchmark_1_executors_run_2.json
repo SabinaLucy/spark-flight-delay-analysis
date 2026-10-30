@@ -1,0 +1,10 @@
+{
+    "executors": 1,
+    "run": 2,
+    "actual_executors": 1,
+    "rows": 5231130,
+    "execution_time_seconds": 815.52,
+    "auc": 0.6384278298177873,
+    "accuracy": 0.6215691164820968,
+    "weighted_f1": 0.6604059523154028
+}
